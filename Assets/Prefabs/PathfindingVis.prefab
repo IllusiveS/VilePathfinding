@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 8343971104283971197}
   - component: {fileID: 8343971104283971194}
   - component: {fileID: 8343971104283971195}
-  - component: {fileID: 8343971104283971192}
   - component: {fileID: 4705443936759305176}
   m_Layer: 0
   m_Name: PathfindingVis
@@ -81,20 +80,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!136 &8343971104283971192
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8343971104283971193}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4705443936759305176
 MonoBehaviour:
   m_ObjectHideFlags: 0

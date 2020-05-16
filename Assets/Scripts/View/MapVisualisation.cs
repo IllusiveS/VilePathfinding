@@ -91,8 +91,12 @@ public class MapVisualisation : MonoBehaviour
                 break;
         }
 
-        if (pathfinding == null) return;
-        var result = pathfinding.CalculatePath(visualisedMap, startPos, endPos);
+        if (pathfinding == null)
+        {
+            Debug.LogError("Wrong pathfinding algorithm selected");
+            return;
+        }
+        var result = pathfinding.CalculatePath(Instantiate(visualisedMap), startPos, endPos);
         StartCoroutine("VisualizePathfindingResult", result);
     }
     
