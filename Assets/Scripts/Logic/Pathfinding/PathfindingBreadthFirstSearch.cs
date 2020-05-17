@@ -16,7 +16,8 @@ namespace Logic.Pathfinding
             result.Aggregator = new Dictionary<Vector2Int, Vector2Int>();
             result.Visualizations = new Queue<VisualizationCommand>();
             result.targetTile = to;
-
+            
+            pathfindingQueue.Clear();
             pathfindingQueue.Enqueue(from);
             result.Aggregator.Add(from, new TileCoordinate(-1, -1));
             do

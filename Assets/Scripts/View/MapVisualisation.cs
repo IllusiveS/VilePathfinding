@@ -5,7 +5,9 @@ using Logic;
 using Logic.Pathfinding;
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Serialization;
+using View;
 
 public class MapVisualisation : MonoBehaviour
 {
@@ -28,6 +30,12 @@ public class MapVisualisation : MonoBehaviour
 
     [BoxGroup("Pathfinding Visualization Settings")]
     public GameObject singleStepVisualizationObject;
+
+    public AssetReference stepVisualizationObject;
+    [BoxGroup("Pathfinding Visualization Settings")]
+    public GameObject startPosGameObject;
+    [BoxGroup("Pathfinding Visualization Settings")]
+    public GameObject endPosGameObject;
     [BoxGroup("Pathfinding Visualization Settings")]
     public float timeBetweenTicks = 0.3f;
     
@@ -63,9 +71,12 @@ public class MapVisualisation : MonoBehaviour
             {
                 var tileStatus = row.tiles[y];
                 if (tileStatus == false) continue;
-                var tileGameObject = Instantiate(passableTile) as GameObject;
-                tileGameObject.transform.parent = transform;
+                var tileGameObject = Instantiate(passableTile, transform) as GameObject;
                 tileGameObject.transform.position = new Vector3(sizeBetweenTiles * x, 0, sizeBetweenTiles * y);
+                var tileVis = tileGameObject.GetComponent<TileVisualization>();
+                tileVis.xCoord = x;
+                tileVis.yCoord = y;
+                tileVis.parent = this;
                 _visualizations.Add(tileGameObject);
             }
         }
@@ -75,7 +86,9 @@ public class MapVisualisation : MonoBehaviour
     void Start()
     {
         _lineRenderer = GetComponent<LineRenderer>();
-        RunPathfinding();
+        startPos = new Vector2Int(-1, -1);
+        endPos = new Vector2Int(-1, -1);
+        stepVisualizationObject.LoadAssetAsync<GameObject>().Completed += handle => singleStepVisualizationObject = handle.Result;
     }
 
     public void RunPathfinding()
@@ -96,20 +109,46 @@ public class MapVisualisation : MonoBehaviour
             Debug.LogError("Wrong pathfinding algorithm selected");
             return;
         }
-        var result = pathfinding.CalculatePath(Instantiate(visualisedMap), startPos, endPos);
+        StopCoroutine("VisualizePathfindingResult");
+        _currentVisualizations.ForEach(Destroy);
+        _currentVisualizations.Clear();
+        var result = pathfinding.CalculatePath(visualisedMap, startPos, endPos);
         StartCoroutine("VisualizePathfindingResult", result);
+        startPos = new Vector2Int(-1, -1);
+        endPos = new Vector2Int(-1, -1);
+    }
+
+    public void respondToTileClick(Vector2Int tileCoord)
+    {
+        if (startPos == new Vector2Int(-1, -1))
+        {
+            startPos = tileCoord;
+        }
+        else if (startPos != tileCoord)
+        {
+            endPos = tileCoord;
+            RunPathfinding();
+        }
     }
     
+    void setStartPoint(Vector2Int startPoint)
+    {
+        this.startPos = startPoint;
+    }
+    
+    void setEndPoint(Vector2Int endPoint)
+    {
+        this.endPos = endPoint;
+    }
 
     private IEnumerator VisualizePathfindingResult(PathfindingResult result)
     {
-        _currentVisualizations.ForEach(DestroyImmediate);
+        _currentVisualizations.ForEach(Destroy);
         _currentVisualizations.Clear();
         do
         {
             var currentCommand = result.Visualizations.Dequeue();
-            var currentVis = Instantiate(singleStepVisualizationObject) as GameObject;
-            currentVis.transform.parent = transform;
+            var currentVis = Instantiate(singleStepVisualizationObject, transform) as GameObject;
             currentVis.transform.position = new Vector3(sizeBetweenTiles * currentCommand.Coordinate.x, 0.0f, sizeBetweenTiles * currentCommand.Coordinate.y);
             _currentVisualizations.Add(currentVis);
             yield return new WaitForSeconds(timeBetweenTicks);
